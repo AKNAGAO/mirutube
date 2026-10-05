@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mirutube
+    runtime: static
+    buildCommand: echo "no build step"
+    staticPublishPath: .
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
