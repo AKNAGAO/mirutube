@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MiruTube</title>
 <style>
   :root {
@@ -61,7 +61,7 @@
 
   /* watch */
   .watch { display: flex; gap: 24px; max-width: 1700px; }
-  .watch .primary { flex: 1; min-width: 0; }
+  .watch > .primary { flex: 1; min-width: 0; }
   .watch .secondary { width: 400px; flex-shrink: 0; }
   .player { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; display: block; }
   .watch h1 { font-size: 20px; margin: 12px 0 8px; }
@@ -185,19 +185,103 @@
   .inline-form { display: flex; gap: 8px; margin-top: 12px; }
   .inline-form input { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; outline: none; }
 
+  /* mobile-only parts (hidden on desktop) */
+  .mobile-only { display: none !important; }
+  .bottom-nav { display: none; }
+  .search .back-btn { display: none; }
+
+  /* my page */
+  .hist-shelf { grid-auto-columns: 168px; }
+  .hist-card .thumb { position: relative; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: var(--bg3); }
+  .hist-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hist-card h3 { font-size: 13px; margin: 6px 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hist-card .meta { font-size: 12px; }
+  .my-links a { display: flex; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid var(--border); font-size: 15px; }
+
   @media (max-width: 1000px) {
     .watch { flex-direction: column; }
     .watch .secondary { width: 100%; }
     nav.side { display: none; }
     body.side-open nav.side { display: block; position: fixed; left: 0; background: var(--bg); z-index: 20; box-shadow: 4px 0 20px var(--shadow); }
+    /* dim the page behind the drawer; tapping it closes the drawer */
+    body.side-open::after { content: ""; position: fixed; inset: 56px 0 0 0; background: rgba(0,0,0,.4); z-index: 15; }
   }
   @media (max-width: 640px) {
-    header { gap: 8px; padding: 0 8px; }
-    .logo span.text, .upload-btn span { display: none; }
-    main { padding: 12px 12px 48px; }
-    .row { flex-direction: column; }
-    .row .thumb { width: 100%; }
-    .actions { margin-left: 0; width: 100%; }
+    header { gap: 4px; padding: 0 4px 0 8px; height: 52px; }
+    .menu-btn, .icon-btn { width: 40px; height: 40px; }
+    .mobile-only { display: grid !important; }
+    header .search, .upload-btn { display: none; }
+    .logo { margin-right: auto; font-size: 19px; }
+    /* search mode: header becomes a full-width search bar */
+    body.search-mode header > *:not(.search) { display: none !important; }
+    body.search-mode header .search { display: flex; max-width: none; margin: 0; }
+    .search .back-btn { display: grid; width: 40px; border: 0; background: transparent; place-items: center; flex-shrink: 0; }
+    .search input { font-size: 16px; border-radius: 20px 0 0 20px; }   /* 16px prevents iOS zoom on focus */
+    .search button[type=submit] { width: 52px; }
+
+    nav.side { top: 52px; height: calc(100vh - 52px - 56px); }
+    body.side-open::after { inset: 52px 0 0 0; }
+    main { padding: 12px 12px calc(72px + env(safe-area-inset-bottom)); }
+
+    /* bottom tab bar */
+    .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--border); }
+    .bottom-nav a, .bottom-nav button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; background: transparent; font-size: 10px; color: var(--fg2); -webkit-tap-highlight-color: transparent; }
+    .bottom-nav .ico { font-size: 20px; line-height: 1; filter: grayscale(1); opacity: .75; }
+    .bottom-nav a.active { color: var(--fg); font-weight: 700; }
+    .bottom-nav a.active .ico { filter: none; opacity: 1; }
+    .bottom-nav .create .ico { width: 44px; height: 30px; border-radius: 15px; border: 1.5px solid var(--fg); display: grid; place-items: center; font-size: 22px; filter: none; opacity: 1; color: var(--fg); }
+    .toast { bottom: calc(68px + env(safe-area-inset-bottom)); }
+
+    /* home: full-bleed thumbnails like a phone app */
+    .grid { grid-template-columns: 1fr; gap: 24px; margin: 0 -12px; }
+    .card .thumb { border-radius: 0; }
+    .card:hover .thumb img { transform: none; }
+    .card .info { padding: 0 12px; margin-top: 10px; }
+    .card h3 { font-size: 15px; }
+    .meta { font-size: 13px; }
+    .chips { margin: 0 -12px 16px; padding: 0 12px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .shelf { grid-auto-columns: 42vw; margin-right: -12px; padding-right: 12px; }
+    .shelf-title { font-size: 18px; }
+
+    /* watch page */
+    .watch > .primary { margin: -12px -12px 0; }
+    .player { border-radius: 0; position: sticky; top: 52px; z-index: 5; }
+    .watch > .primary > :not(.player) { margin-left: 12px; margin-right: 12px; }
+    .watch h1 { font-size: 17px; line-height: 1.4; }
+    .owner-row .sub-btn { margin-left: auto; }
+    .actions { margin: 4px -12px 0; padding: 0 12px; width: calc(100% + 24px); overflow-x: auto; scrollbar-width: none; }
+    .actions::-webkit-scrollbar { display: none; }
+    .actions .pill { flex-shrink: 0; }
+    .comment-form .btns .btn { height: 32px; }
+    .related .thumb { width: 150px; }
+    .related h3 { font-size: 13px; }
+
+    /* lists */
+    .row { flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .row .thumb { width: calc(100% + 24px); margin: 0 -12px; border-radius: 0; }
+    .row h3 { font-size: 16px; }
+    .page-title { font-size: 20px; flex-wrap: wrap; gap: 8px; }
+    .channel-head { gap: 14px; }
+    .channel-head .avatar { width: 72px; height: 72px; font-size: 30px; }
+    .channel-head h1 { font-size: 22px; }
+    .empty { padding: 48px 8px; }
+
+    /* shorts: full-screen with overlaid buttons */
+    .shorts-feed { height: calc(100vh - 52px - 56px - env(safe-area-inset-bottom)); height: calc(100dvh - 52px - 56px - env(safe-area-inset-bottom)); }
+    .short { padding: 0; position: relative; }
+    .short-frame { width: 100%; max-width: none; aspect-ratio: auto; border-radius: 0; }
+    .short-overlay { padding: 48px 76px 16px 14px; }
+    .short-actions { position: absolute; right: 6px; bottom: 16px; gap: 10px; padding: 0; }
+    .short-actions button { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+    .short-actions button i { background: rgba(0,0,0,.35); width: 44px; height: 44px; }
+    .short-actions button.on i { background: var(--accent); }
+
+    /* modals become bottom sheets; notification panel spans the screen */
+    .modal-bg { padding: 0; align-items: flex-end; }
+    .modal { border-radius: 16px 16px 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); max-height: 92vh; max-width: none !important; }
+    .field input, .field textarea { font-size: 16px; }
+    .notif-panel { position: fixed; left: 8px; right: 8px; top: 52px; width: auto; max-width: none; }
   }
 </style>
 </head>
@@ -208,11 +292,17 @@
   </button>
   <a class="logo" href="#/"><span class="logo-mark"></span><span class="text">Miru<b>Tube</b></span></a>
   <form class="search" id="searchForm">
-    <input id="q" type="search" placeholder="検索" autocomplete="off">
+    <button type="button" class="back-btn" id="searchBack" aria-label="戻る">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>
+    </button>
+    <input id="q" type="search" placeholder="検索" autocomplete="off" enterkeyhint="search">
     <button type="submit" aria-label="検索">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
     </button>
   </form>
+  <button class="icon-btn mobile-only" id="searchOpen" aria-label="検索">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+  </button>
   <button class="upload-btn" id="uploadBtn">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2zm3-6H3v12h14v-6.4l4 4V6.4l-4 4V7z"/></svg>
     <span>作成</span>
@@ -247,6 +337,14 @@
   </nav>
   <main id="app"></main>
 </div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <a href="#/" data-nav="home"><span class="ico">🏠</span>ホーム</a>
+  <a href="#/shorts" data-nav="shorts"><span class="ico">⚡</span>ショート</a>
+  <button class="create" id="bnUpload" aria-label="作成"><span class="ico">＋</span></button>
+  <a href="#/subscriptions" data-nav="subscriptions"><span class="ico">📺</span>登録チャンネル</a>
+  <a href="#/mypage" data-nav="mypage"><span class="ico">👤</span>マイページ</a>
+</nav>
 
 <div class="modal-bg" id="uploadModal">
   <form class="modal" id="uploadForm">
@@ -735,6 +833,23 @@ function viewPlaylist(id) {
   };
 }
 
+function viewMyPage() {
+  const name = state.me || 'ゲスト';
+  const hist = state.history.map(id => videos.find(v => v.id === id)).filter(Boolean).slice(0, 12);
+  app.innerHTML = `<div class="channel-head">${avatar(name, 72)}<div><h1>${esc(name)}</h1><a class="meta" href="#/channel/${encodeURIComponent(name)}">チャンネルを表示 ›</a></div></div>
+    <div class="shelf-title">🕘 履歴 <a class="btn" href="#/history" style="margin-left:auto;display:inline-flex;align-items:center;font-size:14px">すべて表示</a></div>
+    ${hist.length ? `<div class="shelf hist-shelf">${hist.map(v => `<a class="hist-card" href="#/watch/${v.id}"><div class="thumb">${thumbImg(v)}</div><h3>${esc(v.title)}</h3><div class="meta">${esc(v.channel)}</div></a>`).join('')}</div>`
+      : '<p class="meta" style="margin:0 0 24px">まだ再生履歴はありません</p>'}
+    <div class="my-links">
+      <a href="#/playlists">📃 再生リスト</a>
+      <a href="#/playlist/${WATCH_LATER}">⏰ 後で見る</a>
+      <a href="#/liked">👍 高く評価した動画</a>
+      <a href="#/mine">🎬 自分の動画</a>
+      <a href="javascript:void 0" id="myTheme">🌓 テーマ切替（ライト / ダーク）</a>
+    </div>`;
+  $('#myTheme').onclick = () => applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+}
+
 function renderSubs() {
   $('#subList').innerHTML = state.subs.map(c => `<a href="#/channel/${encodeURIComponent(c)}"><span class="avatar" style="width:24px;height:24px;font-size:12px;background:${color(c)}">${esc(c[0].toUpperCase())}</span>${esc(c)}</a>`).join('') || '<div class="meta" style="padding:0 12px;font-size:13px">まだありません</div>';
 }
@@ -1060,6 +1175,7 @@ function route() {
   if (page === 'mine') return viewList('🎬 自分の動画', videos.filter(v => v.mine).sort((a, b) => b.createdAt - a.createdAt), '「作成」から動画をアップロードしてください。');
   if (page === 'channel') return viewChannel(arg);
   if (page === 'subscriptions') return viewSubscriptions();
+  if (page === 'mypage') return viewMyPage();
   viewHome();
 }
 
@@ -1193,11 +1309,22 @@ $('#searchForm').onsubmit = e => {
   e.preventDefault();
   const q = $('#q').value.trim();
   location.hash = q ? '#/search/' + encodeURIComponent(q) : '#/';
+  document.body.classList.remove('search-mode');
+  $('#q').blur();
 };
-$('#menuBtn').onclick = () => {
+// mobile: the search icon expands the header into a full-width search bar
+$('#searchOpen').onclick = () => { document.body.classList.add('search-mode'); $('#q').focus(); };
+$('#searchBack').onclick = () => document.body.classList.remove('search-mode');
+$('#bnUpload').onclick = openUpload;
+$('#menuBtn').onclick = e => {
+  e.stopPropagation();
   if (matchMedia('(max-width: 1000px)').matches) document.body.classList.toggle('side-open');
   else document.body.classList.toggle('side-collapsed');
 };
+// tapping the dimmed area outside the drawer closes it
+document.addEventListener('click', e => {
+  if (document.body.classList.contains('side-open') && !e.target.closest('nav.side')) document.body.classList.remove('side-open');
+});
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem('miru-theme', t); } catch {}
